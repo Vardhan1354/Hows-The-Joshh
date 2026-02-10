@@ -2,7 +2,7 @@
 let username = localStorage.getItem("username");
 
 const socket = new WebSocket(
-    "wss://really-gnu-suggested-merit.trycloudflare.com  "
+    "wss://pole-talent-median-metal.trycloudflare.com"
 );
 
 const chatBox = document.getElementById("chatBox");
@@ -77,7 +77,8 @@ socket.onmessage = (event) => {
         chats[data.from].push({
             text: data.message,
             type: "received",
-            time: data.time
+            time: data.time,
+            date: data.date || getDate()
         });
 
         localStorage.setItem("chats", JSON.stringify(chats));
@@ -92,7 +93,8 @@ socket.onmessage = (event) => {
         chats[data.with] = data.messages.map(m => ({
             text: m.text,
             type: m.from === username ? "sent" : "received",
-            time: m.time
+            time: m.time,
+            date: m.date || getDate()
         }));
 
         localStorage.setItem("chats", JSON.stringify(chats));
@@ -126,7 +128,8 @@ function sendMessage() {
     chats[currentChatUser].push({
         text,
         type: "sent",
-        time: getTime()
+        time: getTime(),
+        date: getDate()
     });
 
     socket.send(`TO|${currentChatUser}|${text}`);
@@ -140,11 +143,21 @@ messageInput.addEventListener("keydown", e => {
     if (e.key === "Enter") sendMessage();
 });
 
-// ================== RENDER CHAT ==================
+// ================== RENDER CHAT (WITH DATE) ==================
 function renderChat(user) {
     chatBox.innerHTML = "";
 
+    let lastDate = null;
+
     chats[user].forEach(m => {
+        if (m.date && m.date !== lastDate) {
+            const dateDiv = document.createElement("div");
+            dateDiv.className = "date-separator";
+            dateDiv.textContent = formatDate(m.date);
+            chatBox.appendChild(dateDiv);
+            lastDate = m.date;
+        }
+
         const div = document.createElement("div");
         div.className = `message ${m.type}`;
         div.innerHTML = `
@@ -157,12 +170,33 @@ function renderChat(user) {
     chatBox.scrollTop = chatBox.scrollHeight;
 }
 
-// ================== UTIL ==================
+// ================== DATE & TIME ==================
 function getTime() {
     return new Date().toLocaleTimeString([], {
         hour: "2-digit",
         minute: "2-digit"
     });
+}
+
+function getDate() {
+    const d = new Date();
+    return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
+}
+
+function formatDate(dateStr) {
+    const [y, m, d] = dateStr.split("-");
+    const date = new Date(y, m - 1, d);
+    const today = new Date();
+
+    if (
+        date.getDate() === today.getDate() &&
+        date.getMonth() === today.getMonth() &&
+        date.getFullYear() === today.getFullYear()
+    ) {
+        return "Today";
+    }
+
+    return date.toDateString();
 }
 
 // ================== AVATAR ==================
@@ -179,6 +213,7 @@ function changeTheme(theme) {
     document.body.className = theme === "light" ? "" : theme;
     localStorage.setItem("theme", document.body.className);
 }
+
 const savedTheme = localStorage.getItem("theme");
 if (savedTheme) {
     document.body.className = savedTheme;
@@ -189,4 +224,3 @@ if (savedTheme) {
             savedTheme === "" ? "light" : savedTheme;
     }
 }
-
