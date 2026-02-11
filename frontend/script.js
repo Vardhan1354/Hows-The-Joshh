@@ -2,7 +2,7 @@
 let username = localStorage.getItem("username");
 
 const socket = new WebSocket(
-    "wss://fixed-network-above-composer.trycloudflare.com "
+    "wss://evolution-sensor-intervals-arnold.trycloudflare.com "
 );
 
 const chatBox = document.getElementById("chatBox");
