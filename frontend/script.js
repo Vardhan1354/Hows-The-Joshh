@@ -2,7 +2,7 @@
 let username = localStorage.getItem("username");
 
 const socket = new WebSocket(
-    "wss://pole-talent-median-metal.trycloudflare.com"
+    "wss://fixed-network-above-composer.trycloudflare.com "
 );
 
 const chatBox = document.getElementById("chatBox");
